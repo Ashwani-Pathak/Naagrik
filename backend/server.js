@@ -10,6 +10,13 @@ app.use(cors({
   origin: ['https://naagrik-chi.vercel.app'],
   credentials: true
 }));
+
+// Add catch-all OPTIONS handler for CORS preflight
+app.options('*', cors({
+  origin: ['https://naagrik-chi.vercel.app'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // MongoDB Atlas connection
