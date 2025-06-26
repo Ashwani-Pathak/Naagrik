@@ -7,7 +7,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['https://naagrik-chi.vercel.app'], // your Vercel frontend URL
+  origin: ['https://naagrik-chi.vercel.app'],
   credentials: true
 }));
 app.use(express.json());
