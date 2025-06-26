@@ -1,4 +1,4 @@
-const API_BASE = 'https://YOUR-BACKEND-RENDER-URL.onrender.com/api';
+const API_BASE = 'https://naagrik.onrender.com/api';
 
 function getToken() {
   return localStorage.getItem('token');
