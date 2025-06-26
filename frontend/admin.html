@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard</h1>
+    <nav>
+      <a href="index.html">Back to Map</a>
+      <button id="logout-btn">Logout</button>
+    </nav>
+  </header>
+  <main>
+    <section id="admin-controls" aria-label="Admin controls">
+      <input id="admin-search-bar" type="text" placeholder="Search issues..." aria-label="Search issues">
+      <span id="admin-loading-spinner" style="display:none;" aria-live="polite" aria-busy="true">⏳</span>
+    </section>
+    <h2>All Issues</h2>
+    <div class="table-responsive">
+      <table id="issues-table" aria-label="Issues table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Category</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Issues will be populated here -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+  <script>
+    // Mock issues data
+    let issues = [
+      {
+        id: 1,
+        title: 'Pothole on Main St',
+        category: 'Road',
+        status: 'Open'
+      },
+      {
+        id: 2,
+        title: 'Broken Streetlight',
+        category: 'Lighting',
+        status: 'In Progress'
+      }
+    ];
+    let filteredIssues = issues.slice();
+
+    function showAdminSpinner() {
+      document.getElementById('admin-loading-spinner').style.display = 'inline';
+    }
+    function hideAdminSpinner() {
+      document.getElementById('admin-loading-spinner').style.display = 'none';
+    }
+
+    function renderIssues() {
+      const tbody = document.querySelector('#issues-table tbody');
+      tbody.innerHTML = '';
+      filteredIssues.forEach(issue => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${issue.title}</td>
+          <td>
+            <select class="status-select" data-id="${issue.id}" aria-label="Change status for ${issue.title}">
+              <option value="Open" ${issue.status === 'Open' ? 'selected' : ''}>Open</option>
+              <option value="In Progress" ${issue.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="Resolved" ${issue.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+            </select>
+          </td>
+          <td>${issue.category}</td>
+          <td><button class="delete-btn" data-id="${issue.id}" aria-label="Delete ${issue.title}">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      // Add event listeners
+      document.querySelectorAll('.status-select').forEach(sel => {
+        sel.onchange = function() {
+          const id = parseInt(this.getAttribute('data-id'));
+          const issue = issues.find(i => i.id === id);
+          if(issue) {
+            showAdminSpinner();
+            setTimeout(() => {
+              issue.status = this.value;
+              hideAdminSpinner();
+            }, 600);
+          }
+        };
+      });
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.onclick = function() {
+          const id = parseInt(this.getAttribute('data-id'));
+          const issue = issues.find(i => i.id === id);
+          if(issue && confirm(`Are you sure you want to delete "${issue.title}"?`)) {
+            showAdminSpinner();
+            setTimeout(() => {
+              issues = issues.filter(i => i.id !== id);
+              filteredIssues = issues.filter(i => i.title.toLowerCase().includes(document.getElementById('admin-search-bar').value.toLowerCase()));
+              renderIssues();
+              hideAdminSpinner();
+            }, 600);
+          }
+        };
+      });
+    }
+    // Live search
+    document.getElementById('admin-search-bar').addEventListener('input', function() {
+      const val = this.value.toLowerCase();
+      filteredIssues = issues.filter(i => i.title.toLowerCase().includes(val) || i.category.toLowerCase().includes(val));
+      renderIssues();
+    });
+    renderIssues();
+    document.getElementById('logout-btn').onclick = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
+    };
+  </script>
+</body>
+</html> 

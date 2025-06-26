@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-art" aria-hidden="true">
+    <svg width="100%" height="100%" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:0;">
+      <ellipse cx="650" cy="100" rx="180" ry="80" fill="#f59e42" fill-opacity="0.18"/>
+      <ellipse cx="200" cy="500" rx="220" ry="100" fill="#6366f1" fill-opacity="0.13"/>
+      <ellipse cx="400" cy="200" rx="120" ry="60" fill="#6366f1" fill-opacity="0.09"/>
+    </svg>
+  </div>
+  <div class="form-container" style="animation: fadeIn 0.5s;">
+    <h2>Register</h2>
+    <form id="register-form" aria-label="Register form">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required aria-required="true" aria-label="Username" autofocus>
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required aria-required="true" aria-label="Email">
+      <label for="password">Password:</label>
+      <div style="position:relative;">
+        <input type="password" id="password" name="password" required aria-required="true" aria-label="Password">
+        <button type="button" id="toggle-password" aria-label="Show password" style="position:absolute;right:0.5em;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1em;">
+          <svg id="eye-icon" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button type="submit" id="register-submit">Register</button>
+      <span id="register-loading-spinner" style="display:none;margin-left:0.7em;font-size:1.2em;vertical-align:middle;">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" opacity="0.2"/><path d="M22 12a10 10 0 0 1-10 10"/></svg>
+      </span>
+      <div id="register-error" style="color:#ef4444;margin-top:1em;"></div>
+    </form>
+    <p>Already have an account? <a href="login.html">Login here</a></p>
+    <p><a href="index.html">Back to Map</a></p>
+  </div>
+  <style>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }</style>
+  <script type="module">
+    import { api } from './api.js';
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const errorDiv = document.getElementById('register-error');
+    const spinner = document.getElementById('register-loading-spinner');
+    const submitBtn = document.getElementById('register-submit');
+    const togglePassword = document.getElementById('toggle-password');
+
+    // Show/hide password
+    togglePassword.onclick = function() {
+      const eyeIcon = document.getElementById('eye-icon');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        togglePassword.setAttribute('aria-label', 'Hide password');
+        eyeIcon.innerHTML = '<path d="M17.94 17.94A10.06 10.06 0 0 1 12 20c-7 0-11-8-11-8a19.77 19.77 0 0 1 4.06-5.94M22 12s-4 7-11 7a10.06 10.06 0 0 1-5.94-2.06M1 1l22 22" stroke="currentColor" stroke-width="2" fill="none"/>';
+      } else {
+        passwordInput.type = 'password';
+        togglePassword.setAttribute('aria-label', 'Show password');
+        eyeIcon.innerHTML = '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>';
+      }
+      passwordInput.focus();
+    };
+
+    // Focus username on load
+    window.onload = function() {
+      usernameInput.focus();
+    };
+
+    document.getElementById('register-form').onsubmit = async function(e) {
+      e.preventDefault();
+      errorDiv.textContent = '';
+      spinner.style.display = 'inline';
+      submitBtn.disabled = true;
+      usernameInput.disabled = true;
+      emailInput.disabled = true;
+      passwordInput.disabled = true;
+      try {
+        const username = usernameInput.value;
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        await api.post('/auth/register', { username, email, password });
+        alert('Registration successful! Please login.');
+        window.location.href = 'login.html';
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        spinner.style.display = 'none';
+        submitBtn.disabled = false;
+        usernameInput.disabled = false;
+        emailInput.disabled = false;
+        passwordInput.disabled = false;
+        usernameInput.focus();
+      }
+    };
+  </script>
+</body>
+</html> 

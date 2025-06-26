@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naagrik</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <div class="bg-art" aria-hidden="true">
+    <svg width="100%" height="100%" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:0;">
+      <ellipse cx="1050" cy="120" rx="260" ry="110" fill="#f59e42" fill-opacity="0.13"/>
+      <ellipse cx="300" cy="700" rx="320" ry="140" fill="#6366f1" fill-opacity="0.10"/>
+      <ellipse cx="600" cy="200" rx="180" ry="80" fill="#6366f1" fill-opacity="0.08"/>
+    </svg>
+  </div>
+  <nav class="main-nav" aria-label="Main navigation" style="display:flex;justify-content:center;align-items:center;gap:2em;padding:1.2em 0 0.7em 0;background:var(--glass);backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(99,102,241,0.07);border-radius:0 0 1.2em 1.2em;position:relative;z-index:2;">
+    <a href="index.html" class="nav-logo" style="font-family:'Poppins',sans-serif;font-size:1.3em;font-weight:900;color:var(--primary-dark);letter-spacing:1px;display:flex;align-items:center;gap:0.3em;text-decoration:none;">
+      <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h6"/></svg>
+      Naagrik
+    </a>
+    <a href="about.html" class="nav-link"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><circle cx="12" cy="8" r="1.2"/></svg> About</a>
+    <a href="emergency.html" class="nav-link"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;"><path d="M12 2v20M2 12h20"/></svg> Emergency Contacts</a>
+    <a href="authority.html" class="nav-link"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg> Authority Contacts</a>
+    <a href="#more" class="nav-link"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg> More</a>
+    <a href="login.html" id="login-link" class="nav-link" style="display:inline;"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Login</a>
+    <a href="register.html" id="register-link" class="nav-link" style="display:inline;"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7.5 7.5 0 0 1 13 0"/></svg> Register</a>
+    <a href="admin.html" id="admin-link" class="nav-link" style="display:none;"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg> Admin</a>
+    <button id="logout-btn" class="nav-link" style="display:none;background:none;border:none;cursor:pointer;"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</button>
+    <span id="profile-nav-icon" style="display:none;cursor:pointer;position:relative;">
+      <img id="profile-nav-avatar" src="https://api.dicebear.com/7.x/person/svg?seed=user" alt="Profile" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);box-shadow:0 2px 8px rgba(99,102,241,0.10);vertical-align:middle;" />
+    </span>
+  </nav>
+  <header style="background: none; box-shadow: none; border-radius: 0; margin-bottom: 0;">
+    <h1 style="font-family: 'Poppins', 'Inter', Arial, sans-serif; font-size: 2.7em; font-weight: 900; color: var(--primary-dark); letter-spacing: 2px; text-align: center; margin: 1.2em 0 0.2em 0; text-shadow: 0 2px 12px rgba(99,102,241,0.10);">NAAGRIK</h1>
+  </header>
+  <section style="margin: 0 auto 1.5em auto; max-width: 700px;">
+    <div class="slogan">Empowering <span class="slogan-accent">Communities</span> for a Better Tomorrow</div>
+    <div class="slogan-desc">Report, track, and resolve local issues together. Your voice, your city, your change.</div>
+    <div class="slogan">Be the <span class="slogan-accent">Change</span> You Wish to See</div>
+    <div class="slogan-desc">Join Naagrik and make your neighborhood a better place for everyone.</div>
+    <div class="slogan">Simple. Transparent. <span class="slogan-accent">Impactful.</span></div>
+    <div class="slogan-desc">A platform for citizens, by citizens.</div>
+  </section>
+  <div class="map-issue-flex">
+    <div class="map-flex-left">
+      <section id="map-controls" aria-label="Map controls">
+        <input id="search-bar" type="text" placeholder="Search location..." aria-label="Search location">
+        <button id="search-btn" aria-label="Search">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <button id="locate-btn" aria-label="Show my location">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+        </button>
+        <button id="reset-btn" aria-label="Reset map view">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7l3 3"/></svg>
+        </button>
+        <span id="loading-spinner" style="display:none;" aria-live="polite" aria-busy="true">⏳</span>
+      </section>
+      <div id="map">
+        <div class="map-placeholder">
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><ellipse cx="40" cy="40" rx="36" ry="18" fill="#6366f1" fill-opacity="0.08"/><ellipse cx="40" cy="40" rx="24" ry="10" fill="#f59e42" fill-opacity="0.10"/><rect x="30" y="30" width="20" height="20" rx="6" fill="#fff" stroke="#6366f1" stroke-width="2"/></svg>
+          <div style="color:#bbb;font-size:1.1em;margin-top:0.7em;">Map will appear here</div>
+        </div>
+      </div>
+    </div>
+    <div class="map-flex-right">
+      <aside id="sidebar" aria-label="Issue details sidebar">
+        <h2>Issue Details</h2>
+        <div id="issue-details">Select a pin to see details.</div>
+        <div id="comments-section"></div>
+        <button id="add-issue-btn" class="add-issue-main-btn">Add New Issue</button>
+      </aside>
+    </div>
+  </div>
+
+  <div id="main-extra-content">
+    <!-- 1. Civic Issues Making Headlines -->
+    <section class="civic-headlines">
+      <h2><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="vertical-align:middle;"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h10M7 13h6"/></svg> Civic Issues Making Headlines</h2>
+      <div class="headline-cards">
+        <div class="headline-card">
+          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=400&h=200&q=80" alt="Pothole" />
+          <div class="headline-title">Major Pothole Causes Traffic Chaos in City Center</div>
+          <div class="headline-source">The Times of India · 2 days ago</div>
+        </div>
+        <div class="headline-card">
+          <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=facearea&w=400&h=200&q=80" alt="Garbage" />
+          <div class="headline-title">Overflowing Garbage Bins Spark Health Concerns</div>
+          <div class="headline-source">Hindustan Times · 1 day ago</div>
+        </div>
+        <div class="headline-card">
+          <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=facearea&w=400&h=200&q=80" alt="Waterlogging" />
+          <div class="headline-title">Monsoon Waterlogging Disrupts Daily Life</div>
+          <div class="headline-source">NDTV · 3 hours ago</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Why Naagrik? Infographic -->
+    <section class="why-naagrik">
+      <h2><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h6"/></svg> Why Naagrik?</h2>
+      <div class="why-infographic">
+        <div class="why-step">
+          <div class="why-icon"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></div>
+          <div class="why-title">Spot an Issue</div>
+        </div>
+        <div class="why-step">
+          <div class="why-icon"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8"/></svg></div>
+          <div class="why-title">Report Easily</div>
+        </div>
+        <div class="why-step">
+          <div class="why-icon"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="10"/></svg></div>
+          <div class="why-title">Track Progress</div>
+        </div>
+        <div class="why-step">
+          <div class="why-icon"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 17v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div class="why-title">Authorities Notified</div>
+        </div>
+        <div class="why-step">
+          <div class="why-icon"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20l9-5-9-5-9 5 9 5z"/><path d="M12 12V4"/></svg></div>
+          <div class="why-title">Community Impact</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Naagrik in Numbers -->
+    <section class="naagrik-numbers">
+      <h2><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="vertical-align:middle;"><path d="M3 3h18v18H3z"/><path d="M7 7h10v10H7z"/></svg> Naagrik in Numbers</h2>
+      <div class="numbers-counters">
+        <div class="counter-card">
+          <div class="counter-number" data-target="1240">0</div>
+          <div class="counter-label">Issues Reported</div>
+        </div>
+        <div class="counter-card">
+          <div class="counter-number" data-target="980">0</div>
+          <div class="counter-label">Issues Resolved</div>
+        </div>
+        <div class="counter-card">
+          <div class="counter-number" data-target="3200">0</div>
+          <div class="counter-label">Active Users</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. User Stories -->
+    <section class="user-stories">
+      <h2><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h6"/></svg> User Stories</h2>
+      <div class="stories-grid">
+        <div class="story-card">
+          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" />
+          <div class="story-quote">“Reporting a pothole was so easy! The authorities fixed it in 2 days.”</div>
+          <div class="story-user">Amit, Delhi</div>
+        </div>
+        <div class="story-card">
+          <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" />
+          <div class="story-quote">“Naagrik helped our community get cleaner streets.”</div>
+          <div class="story-user">Priya, Mumbai</div>
+        </div>
+        <div class="story-card">
+          <img src="https://randomuser.me/api/portraits/men/65.jpg" alt="User" />
+          <div class="story-quote">“I love tracking the progress of my reports!”</div>
+          <div class="story-user">Rahul, Bengaluru</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. How You Can Help -->
+    <section class="how-help">
+      <h2><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="vertical-align:middle;"><path d="M12 20l9-5-9-5-9 5 9 5z"/><path d="M12 12V4"/></svg> How You Can Help</h2>
+      <div class="help-ways">
+        <div class="help-way"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg> Report Issues</div>
+        <div class="help-way"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 12h8"/></svg> Upvote & Comment</div>
+        <div class="help-way"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20l9-5-9-5-9 5 9 5z"/><path d="M12 12V4"/></svg> Share with Friends</div>
+      </div>
+      <div class="help-cta">
+        <button class="add-issue-main-btn" onclick="window.scrollTo({top:0,behavior:'smooth'});">Be a Civic Hero – Report Now</button>
+      </div>
+    </section>
+
+    <!-- 6. Civic Problem Gallery -->
+    <section class="problem-gallery">
+      <h2><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="vertical-align:middle;"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h10M7 13h6"/></svg> Civic Problem Gallery</h2>
+      <div class="gallery-grid">
+        <div class="gallery-item"><img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=400&h=200&q=80" alt="Pothole" /><div class="gallery-label">Pothole</div></div>
+        <div class="gallery-item"><img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=facearea&w=400&h=200&q=80" alt="Garbage" /><div class="gallery-label">Garbage</div></div>
+        <div class="gallery-item"><img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=facearea&w=400&h=200&q=80" alt="Waterlogging" /><div class="gallery-label">Waterlogging</div></div>
+        <div class="gallery-item"><img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=facearea&w=400&h=200&q=80" alt="Broken Streetlight" /><div class="gallery-label">Broken Streetlight</div></div>
+        <div class="gallery-item"><img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=facearea&w=400&h=200&q=80" alt="Overflowing Drain" /><div class="gallery-label">Overflowing Drain</div></div>
+        <div class="gallery-item"><img src="https://images.unsplash.com/photo-1465101178521-c1a9136a3fd9?auto=format&fit=facearea&w=400&h=200&q=80" alt="Illegal Dumping" /><div class="gallery-label">Illegal Dumping</div></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="edit-profile-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close" id="close-edit-profile-modal">
+        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </span>
+      <h2>Edit Profile</h2>
+      <form id="edit-profile-form" autocomplete="off" enctype="multipart/form-data">
+        <label for="edit-avatar">Profile Picture:</label>
+        <input type="file" id="edit-avatar" name="avatar" accept="image/*">
+        <img id="edit-avatar-preview" src="" alt="Avatar Preview" style="display:none;width:64px;height:64px;border-radius:50%;margin:0.7em 0;" />
+        <label for="edit-description">Description:</label>
+        <input type="text" id="edit-description" name="description">
+        <label for="edit-contact">Contact Info:</label>
+        <input type="text" id="edit-contact" name="contact">
+        <div id="edit-profile-error" style="color:var(--danger);margin-top:0.7em;display:none;"></div>
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- New Add Issue Modal -->
+  <div id="add-issue-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close" id="close-modal">
+        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </span>
+      <h2>Add New Issue</h2>
+      <form id="add-issue-form" autocomplete="off" enctype="multipart/form-data">
+        <label for="issue-title">Title:</label>
+        <input type="text" id="issue-title" name="title" required>
+        <label for="issue-description">Description:</label>
+        <textarea id="issue-description" name="description" required></textarea>
+        <label for="issue-category">Category:</label>
+        <input type="text" id="issue-category" name="category" required>
+        <label for="issue-photo">Photo (upload):</label>
+        <input type="file" id="issue-photo" name="photo" accept="image/*">
+        <img id="issue-photo-preview" src="" alt="Issue Preview" style="display:none;width:100px;margin:0.7em 0;" />
+        <label for="issue-location">Location (click on map):</label>
+        <input type="text" id="issue-location" name="location" readonly required>
+        <input type="text" id="issue-location-name" name="locationName" readonly placeholder="Location name will appear here" style="margin-top:0.5em;">
+        <div id="add-issue-error" style="color:var(--danger);margin-top:0.7em;display:none;"></div>
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="profile-dropdown" class="profile-dropdown" style="display:none;">
+    <div class="profile-header">
+      <img class="profile-avatar" id="profile-dropdown-avatar" src="https://api.dicebear.com/7.x/person/svg?seed=user" alt="Profile Avatar" />
+      <div class="profile-username" id="profile-dropdown-username">@user</div>
+    </div>
+    <div class="profile-info">
+      <div><strong>Description:</strong> <span id="profile-desc">(Add a description)</span></div>
+      <div><strong>Issues Reported:</strong> <span id="profile-reported">0</span></div>
+      <div><strong>Issues Resolved:</strong> <span id="profile-resolved">0</span></div>
+      <div><strong>Contact:</strong> <span id="profile-contact">(Add contact info)</span></div>
+    </div>
+    <div class="profile-actions">
+      <button id="edit-profile-btn">Edit Profile</button>
+      <button id="logout-btn-profile">Logout</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script type="module">
+    import { api } from './api.js';
+    // Debug logs
+    console.log("Script loaded");
+    console.log("addIssueBtn:", document.getElementById('add-issue-btn'));
+    console.log("addIssueModal:", document.getElementById('add-issue-modal'));
+    console.log("addIssueForm:", document.getElementById('add-issue-form'));
+
+    // Auth state
+    let user = null;
+    let token = localStorage.getItem('token');
+    try { user = JSON.parse(localStorage.getItem('user')); } catch {}
+    let isLoggedIn = !!token;
+    let isAdmin = user && user.role === 'admin';
+
+    // Map and marker logic
+    const map = L.map('map').setView([28.6139, 77.2090], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Custom icons
+    const issueIcon = L.divIcon({
+      className: '',
+      html: `<svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="16" cy="16" rx="12" ry="12" fill="#6366f1"/>
+        <ellipse cx="16" cy="16" rx="7" ry="7" fill="#fff"/>
+        <ellipse cx="16" cy="16" rx="4" ry="4" fill="#f59e42"/>
+        <path d="M16 40C21 32 28 25 16 25C4 25 11 32 16 40Z" fill="#6366f1"/>
+      </svg>`,
+      iconSize: [32, 40],
+      iconAnchor: [16, 40],
+      popupAnchor: [0, -36]
+    });
+    const userIcon = L.divIcon({
+      className: '',
+      html: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="12" fill="#fff"/>
+        <circle cx="16" cy="16" r="9" fill="#6366f1"/>
+        <circle cx="16" cy="16" r="5" fill="#fff"/>
+      </svg>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -16]
+    });
+    const searchIcon = L.divIcon({
+      className: '',
+      html: `<svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="16" cy="16" rx="12" ry="12" fill="#f59e42"/>
+        <ellipse cx="16" cy="16" rx="7" ry="7" fill="#fff"/>
+        <ellipse cx="16" cy="16" rx="4" ry="4" fill="#6366f1"/>
+        <path d="M16 40C21 32 28 25 16 25C4 25 11 32 16 40Z" fill="#f59e42"/>
+      </svg>`,
+      iconSize: [32, 40],
+      iconAnchor: [16, 40],
+      popupAnchor: [0, -36]
+    });
+
+    let markers = [];
+    let issues = [];
+    let userMarker = null;
+    let searchMarker = null;
+    const defaultView = { center: [28.6139, 77.2090], zoom: 13 };
+
+    // Loading spinner helpers
+    function showSpinner() {
+      document.getElementById('loading-spinner').style.display = 'inline';
+    }
+    function hideSpinner() {
+      document.getElementById('loading-spinner').style.display = 'none';
+    }
+
+    async function loadIssues() {
+      showSpinner();
+      try {
+        issues = await api.get('/issues');
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+        issues.forEach(issue => {
+          const marker = L.marker([issue.location.lat, issue.location.lng], { icon: issueIcon }).addTo(map);
+          marker.on('click', () => showIssueDetails(issue));
+          markers.push(marker);
+        });
+      } catch (err) {
+        alert('Failed to load issues: ' + err.message);
+      }
+      hideSpinner();
+    }
+    loadIssues();
+
+    // Show current location
+    document.getElementById('locate-btn').onclick = function() {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser.');
+        return;
+      }
+      showSpinner();
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        hideSpinner();
+        const latlng = [pos.coords.latitude, pos.coords.longitude];
+        if (userMarker) map.removeLayer(userMarker);
+        userMarker = L.marker(latlng, { icon: userIcon }).addTo(map).bindPopup('You are here').openPopup();
+        map.setView(latlng, 15);
+      }, function() {
+        hideSpinner();
+        alert('Unable to retrieve your location.');
+      });
+    };
+
+    // Search location
+    document.getElementById('search-btn').onclick = async function() {
+      const query = document.getElementById('search-bar').value.trim();
+      if (!query) return;
+      showSpinner();
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!data.length) {
+          alert('Location not found.');
+          hideSpinner();
+          return;
+        }
+        const { lat, lon, display_name } = data[0];
+        if (searchMarker) map.removeLayer(searchMarker);
+        searchMarker = L.marker([lat, lon], { icon: searchIcon }).addTo(map).bindPopup(`Search: ${display_name}`).openPopup();
+        map.setView([lat, lon], 15);
+      } catch (err) {
+        alert('Search failed.');
+      }
+      hideSpinner();
+    };
+    document.getElementById('search-bar').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('search-btn').click();
+      }
+    });
+
+    // Reset map view
+    document.getElementById('reset-btn').onclick = function() {
+      map.setView(defaultView.center, defaultView.zoom);
+      if (userMarker) map.removeLayer(userMarker);
+      if (searchMarker) map.removeLayer(searchMarker);
+    };
+
+    // Sidebar collapse/expand
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    function updateSidebarToggle() {
+      if (!sidebarToggle || !sidebar) return;
+      if (window.innerWidth < 900) {
+        sidebarToggle.style.display = 'block';
+        sidebar.classList.remove('collapsed');
+      } else {
+        sidebarToggle.style.display = 'none';
+        sidebar.classList.remove('collapsed');
+      }
+    }
+    if (sidebarToggle) {
+      sidebarToggle.onclick = function() {
+        sidebar.classList.toggle('collapsed');
+        sidebarToggle.setAttribute('aria-label', sidebar.classList.contains('collapsed') ? 'Expand sidebar' : 'Collapse sidebar');
+      };
+      window.addEventListener('resize', updateSidebarToggle);
+      updateSidebarToggle();
+    }
+
+    // Accessibility: focus search bar on load
+    document.getElementById('search-bar').focus();
+
+    // Show issue details in sidebar
+    async function showIssueDetails(issue) {
+      // Helper function to get avatar URL
+      function getAvatarUrl(user, fallbackSeed = 'user') {
+        if (
+          user &&
+          typeof user.avatar === 'string' &&
+          user.avatar.trim() !== '' &&
+          user.avatar !== 'undefined' &&
+          user.avatar !== 'null'
+        ) {
+          return user.avatar.startsWith('http')
+            ? user.avatar
+            : `http://localhost:5000${user.avatar}`;
+        }
+        return `https://api.dicebear.com/7.x/person/svg?seed=${user?.username || fallbackSeed}`;
+      }
+
+      document.getElementById('issue-details').innerHTML = `
+        <div class="issue-social-header">
+          <img class="issue-avatar" src="${getAvatarUrl(issue.createdBy)}" alt="User Avatar" />
+          <div class="issue-meta">
+            <h3>${issue.title}</h3>
+            <div class="issue-meta-row">
+              <span class="issue-username">@${issue.createdBy?.username || 'user'}</span>
+              <span class="issue-timestamp">${issue.createdAt ? new Date(issue.createdAt).toLocaleString() : ''}</span>
+            </div>
+            <div class="issue-category-status">
+              <span class="issue-category"><strong>Category:</strong> ${issue.category}</span>
+              <span class="issue-status"><strong>Status:</strong> ${issue.status}</span>
+            </div>
+            ${issue.location?.name ? `<div class='issue-location'><strong>Location:</strong> ${issue.location.name}</div>` : ''}
+          </div>
+        </div>
+        <div class="issue-description">${issue.description}</div>
+        ${issue.photo ? `<img src="${issue.photo}" alt="Issue Photo" class="issue-photo">` : ''}
+        <div class="issue-social-actions">
+          <button id="upvote-btn" class="upvote-btn" title="Upvote">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="vertical-align:middle;"><path d="M7 10v8a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-8"/><path d="M12 4l-4 6h8z"/></svg>
+            <span id="upvote-count">${issue.upvotes}</span>
+          </button>
+          <button id="comment-toggle-btn" class="comment-toggle-btn" title="Show Comments">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="vertical-align:middle;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span id="comment-count">${issue.comments ? issue.comments.length : 0}</span>
+          </button>
+        </div>
+      `;
+      // Comments
+      let commentsHtml = '<h4>Comments</h4><ul class="comments-list">';
+      (issue.comments || []).forEach((c, idx) => {
+        commentsHtml += `<li class="comment-item">
+          <img class="comment-avatar" src="${getAvatarUrl(c.createdBy, `comment${idx}`)}" alt="Avatar" />
+          <div class="comment-body">
+            <div class="comment-text">${c.text}</div>
+            <div class="comment-meta">${c.createdAt ? new Date(c.createdAt).toLocaleString() : ''}</div>
+          </div>
+        </li>`;
+      });
+      commentsHtml += '</ul>';
+      commentsHtml += `<form id="comment-form" class="comment-form">
+        <span class="comment-input-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="10" cy="10" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </span>
+        <input type="text" id="comment-input" placeholder="Add a comment..." required>
+        <button type="submit">Post</button>
+      </form>`;
+      document.getElementById('comments-section').innerHTML = commentsHtml;
+      // Toggle comment section
+      const commentToggleBtn = document.getElementById('comment-toggle-btn');
+      const commentsSection = document.getElementById('comments-section');
+      if (commentToggleBtn && commentsSection) {
+        commentToggleBtn.onclick = () => {
+          if (commentsSection.style.display === 'none' || commentsSection.style.display === '') {
+            commentsSection.style.display = 'block';
+            commentToggleBtn.title = 'Hide Comments';
+          } else {
+            commentsSection.style.display = 'none';
+            commentToggleBtn.title = 'Show Comments';
+          }
+        };
+      }
+      // Upvote handler
+      document.getElementById('upvote-btn').onclick = async () => {
+        try {
+          const updated = await api.post(`/issues/${issue._id}/upvote`);
+          issue.upvotes = updated.upvotes;
+          document.getElementById('upvote-count').textContent = issue.upvotes;
+        } catch (err) {
+          alert('Failed to upvote: ' + err.message);
+        }
+      };
+      // Comment handler
+      document.getElementById('comment-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const val = document.getElementById('comment-input').value;
+        if(val) {
+          try {
+            await api.post(`/issues/${issue._id}/comments`, { text: val });
+            await loadIssues();
+            const updated = issues.find(i => i._id === issue._id);
+            showIssueDetails(updated);
+          } catch (err) {
+            alert('Failed to add comment: ' + err.message);
+          }
+        }
+      };
+    }
+
+    // Add Issue button logic (remade)
+    const addIssueBtn = document.getElementById('add-issue-btn');
+    const addIssueModal = document.getElementById('add-issue-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const addIssueForm = document.getElementById('add-issue-form');
+    const errorDiv = document.getElementById('add-issue-error');
+    const locationInput = document.getElementById('issue-location');
+    let newIssueLatLng = null;
+
+    addIssueBtn.onclick = () => {
+      console.log('Add Issue button clicked');
+      if (!isLoggedIn) {
+        if (confirm('You need to log in or register to add an issue. Go to login page?')) {
+          window.location.href = 'login.html';
+        }
+        return;
+      }
+      addIssueModal.style.display = 'block';
+      console.log('Add Issue modal shown');
+      errorDiv.style.display = 'none';
+      addIssueForm.reset();
+      locationInput.value = '';
+      newIssueLatLng = null;
+    };
+
+    if (closeModalBtn) {
+      closeModalBtn.onclick = () => {
+        addIssueModal.style.display = 'none';
+      };
+    }
+
+    if (map && addIssueModal && locationInput) {
+      map.on('click', function(e) {
+        if (addIssueModal.style.display === 'block') {
+          newIssueLatLng = e.latlng;
+          locationInput.value = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+        }
+      });
+    }
+
+    if (addIssueForm) addIssueForm.onsubmit = async function(e) {
+      e.preventDefault();
+      if (!isLoggedIn) {
+        errorDiv.textContent = 'You must be logged in to add an issue.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      const title = document.getElementById('issue-title').value.trim();
+      const description = document.getElementById('issue-description').value.trim();
+      const category = document.getElementById('issue-category').value.trim();
+      const photo = document.getElementById('issue-photo').value.trim();
+      if (!title || !description || !category || !newIssueLatLng) {
+        errorDiv.textContent = 'All fields except photo are required, and you must select a location on the map.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      try {
+        await api.post('/issues', {
+          title,
+          description,
+          category,
+          photo,
+          location: { lat: newIssueLatLng.lat, lng: newIssueLatLng.lng }
+        });
+        addIssueModal.style.display = 'none';
+        addIssueForm.reset();
+        locationInput.value = '';
+        newIssueLatLng = null;
+        await loadIssues();
+      } catch (err) {
+        errorDiv.textContent = err.message || 'Failed to add issue.';
+        errorDiv.style.display = 'block';
+      }
+    };
+
+    // Navigation logic
+    document.getElementById('login-link').style.display = isLoggedIn ? 'none' : 'inline';
+    document.getElementById('register-link').style.display = isLoggedIn ? 'none' : 'inline';
+    document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline' : 'none';
+    document.getElementById('admin-link').style.display = isAdmin ? 'inline' : 'none';
+    document.getElementById('logout-btn').onclick = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
+    };
+
+    // Add Issue button in hero section
+    const addIssueBtnHero = document.getElementById('add-issue-btn-hero');
+    if (addIssueBtnHero) {
+      addIssueBtnHero.onclick = () => {
+        if (isLoggedIn) {
+          document.getElementById('add-issue-modal').style.display = 'block';
+        } else {
+          if (confirm('You need to log in or register to add an issue. Go to login page?')) {
+            window.location.href = 'login.html';
+          }
+        }
+      };
+    }
+
+    if (isLoggedIn) {
+      document.getElementById('profile-nav-icon').style.display = 'inline-block';
+      const userAvatar = document.getElementById('profile-nav-avatar');
+      const dropdownAvatar = document.getElementById('profile-dropdown-avatar');
+      const dropdownUsername = document.getElementById('profile-dropdown-username');
+      const userName = user?.username || 'user';
+      
+      // Fetch actual profile data
+      api.get('/users/me').then(profile => {
+        // Update avatars
+        if (profile.avatar) {
+          const avatarUrl = profile.avatar.startsWith('http') ? profile.avatar : `http://localhost:5000${profile.avatar}`;
+          userAvatar.src = avatarUrl;
+          dropdownAvatar.src = avatarUrl;
+        } else {
+          userAvatar.src = `https://api.dicebear.com/7.x/person/svg?seed=${userName}`;
+          dropdownAvatar.src = `https://api.dicebear.com/7.x/person/svg?seed=${userName}`;
+        }
+        
+        // Update dropdown info
+        dropdownUsername.textContent = `@${userName}`;
+        updateProfileDropdown(profile);
+      }).catch(err => {
+        // Fallback to default avatars if API fails
+        userAvatar.src = `https://api.dicebear.com/7.x/person/svg?seed=${userName}`;
+        dropdownAvatar.src = `https://api.dicebear.com/7.x/person/svg?seed=${userName}`;
+        dropdownUsername.textContent = `@${userName}`;
+      });
+    }
+    const profileNavIcon = document.getElementById('profile-nav-icon');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    if (profileNavIcon && profileDropdown) {
+      profileNavIcon.onclick = (e) => {
+        e.stopPropagation();
+        profileDropdown.style.display = (profileDropdown.style.display === 'none' || profileDropdown.style.display === '') ? 'flex' : 'none';
+      };
+      document.addEventListener('click', (e) => {
+        if (!profileDropdown.contains(e.target) && e.target !== profileNavIcon && e.target !== document.getElementById('profile-nav-avatar')) {
+          profileDropdown.style.display = 'none';
+        }
+      });
+    }
+    const logoutBtnProfile = document.getElementById('logout-btn-profile');
+    if (logoutBtnProfile) {
+      logoutBtnProfile.onclick = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+      };
+    }
+
+    // Profile Edit Modal Logic
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const editProfileModal = document.getElementById('edit-profile-modal');
+    const closeEditProfileModal = document.getElementById('close-edit-profile-modal');
+    const editProfileForm = document.getElementById('edit-profile-form');
+    const editAvatarInput = document.getElementById('edit-avatar');
+    const editAvatarPreview = document.getElementById('edit-avatar-preview');
+    const editProfileError = document.getElementById('edit-profile-error');
+
+    if (editProfileBtn && editProfileModal) {
+      editProfileBtn.onclick = () => {
+        editProfileModal.style.display = 'block';
+        editProfileError.style.display = 'none';
+        // Fetch current profile info
+        api.get('/users/me').then(profile => {
+          document.getElementById('edit-description').value = profile.description || '';
+          document.getElementById('edit-contact').value = profile.contact || '';
+          if (profile.avatar) {
+            editAvatarPreview.src = profile.avatar;
+            editAvatarPreview.style.display = 'block';
+          } else {
+            editAvatarPreview.style.display = 'none';
+          }
+        });
+      };
+    }
+    if (closeEditProfileModal) {
+      closeEditProfileModal.onclick = () => {
+        editProfileModal.style.display = 'none';
+      };
+    }
+    if (editAvatarInput) {
+      editAvatarInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            editAvatarPreview.src = ev.target.result;
+            editAvatarPreview.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+    }
+    if (editProfileForm) {
+      editProfileForm.onsubmit = async function(e) {
+        e.preventDefault();
+        editProfileError.style.display = 'none';
+        try {
+          // Update description/contact
+          const description = document.getElementById('edit-description').value;
+          const contact = document.getElementById('edit-contact').value;
+          const updatedProfile = await api.put('/users/me', { description, contact });
+          
+          // Upload avatar if selected
+          let avatarUrl = updatedProfile.avatar;
+          const avatarFile = editAvatarInput.files[0];
+          if (avatarFile) {
+            const avatarRes = await api.upload('/users/me/avatar', avatarFile, 'avatar');
+            avatarUrl = avatarRes.avatar;
+          }
+          
+          // Update profile dropdown with new data
+          updateProfileDropdown(updatedProfile, avatarUrl);
+          
+          // Update nav avatar if avatar was changed
+          if (avatarUrl) {
+            const navAvatar = document.getElementById('profile-nav-avatar');
+            if (navAvatar) {
+              navAvatar.src = avatarUrl.startsWith('http') ? avatarUrl : `http://localhost:5000${avatarUrl}`;
+            }
+          }
+          
+          editProfileModal.style.display = 'none';
+          editProfileForm.reset();
+          editAvatarPreview.style.display = 'none';
+          
+          // Show success message
+          alert('Profile updated successfully!');
+        } catch (err) {
+          editProfileError.textContent = err.message || 'Failed to update profile.';
+          editProfileError.style.display = 'block';
+        }
+      };
+    }
+
+    // Function to update profile dropdown with new data
+    function updateProfileDropdown(profile, avatarUrl = null) {
+      const profileDesc = document.getElementById('profile-desc');
+      const profileContact = document.getElementById('profile-contact');
+      const dropdownAvatar = document.getElementById('profile-dropdown-avatar');
+      
+      if (profileDesc) {
+        profileDesc.textContent = profile.description || '(Add a description)';
+      }
+      if (profileContact) {
+        profileContact.textContent = profile.contact || '(Add contact info)';
+      }
+      if (dropdownAvatar && avatarUrl) {
+        dropdownAvatar.src = avatarUrl.startsWith('http') ? avatarUrl : `http://localhost:5000${avatarUrl}`;
+      }
+    }
+
+    // Add Issue Modal: Image Preview, Upload, Location Name
+    const issuePhotoInput = document.getElementById('issue-photo');
+    const issuePhotoPreview = document.getElementById('issue-photo-preview');
+    let uploadedIssueImageUrl = '';
+    if (issuePhotoInput) {
+      issuePhotoInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            issuePhotoPreview.src = ev.target.result;
+            issuePhotoPreview.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+    }
+
+    // Reverse geocode for location name
+    async function reverseGeocode(lat, lng) {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.display_name || '';
+    }
+
+    // Map click handler for Add Issue
+    map.on('click', async function(e) {
+      if (addIssueModal.style.display === 'block') {
+        newIssueLatLng = e.latlng;
+        locationInput.value = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+        // Get location name
+        const name = await reverseGeocode(e.latlng.lat, e.latlng.lng);
+        document.getElementById('issue-location-name').value = name;
+      }
+    });
+
+    // Add Issue form submit
+    addIssueForm.onsubmit = async function(e) {
+      e.preventDefault();
+      if (!isLoggedIn) {
+        errorDiv.textContent = 'You must be logged in to add an issue.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      const title = document.getElementById('issue-title').value.trim();
+      const description = document.getElementById('issue-description').value.trim();
+      const category = document.getElementById('issue-category').value.trim();
+      const locationName = document.getElementById('issue-location-name').value.trim();
+      // Upload image if selected
+      let photoUrl = '';
+      const photoFile = issuePhotoInput.files[0];
+      if (photoFile) {
+        try {
+          const uploadRes = await api.upload('/upload', photoFile, 'image');
+          photoUrl = uploadRes.url;
+        } catch (err) {
+          errorDiv.textContent = 'Image upload failed.';
+          errorDiv.style.display = 'block';
+          return;
+        }
+      }
+      if (!title || !description || !category || !newIssueLatLng) {
+        errorDiv.textContent = 'All fields except photo are required, and you must select a location on the map.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      try {
+        await api.post('/issues', {
+          title,
+          description,
+          category,
+          photo: photoUrl,
+          location: { lat: newIssueLatLng.lat, lng: newIssueLatLng.lng, name: locationName }
+        });
+        addIssueModal.style.display = 'none';
+        addIssueForm.reset();
+        issuePhotoPreview.style.display = 'none';
+        locationInput.value = '';
+        document.getElementById('issue-location-name').value = '';
+        newIssueLatLng = null;
+        await loadIssues();
+      } catch (err) {
+        errorDiv.textContent = err.message || 'Failed to add issue.';
+        errorDiv.style.display = 'block';
+      }
+    };
+  </script>
+  <script>
+    // Animated counters for Naagrik in Numbers
+    function animateCounters() {
+      const counters = document.querySelectorAll('.counter-number');
+      counters.forEach(counter => {
+        const updateCount = () => {
+          const target = +counter.getAttribute('data-target');
+          const count = +counter.innerText.replace(/,/g, '');
+          const increment = Math.max(1, Math.floor(target / 80));
+          if (count < target) {
+            counter.innerText = (count + increment).toLocaleString();
+            setTimeout(updateCount, 18);
+          } else {
+            counter.innerText = target.toLocaleString();
+          }
+        };
+        updateCount();
+      });
+    }
+    // Only animate when section is in view
+    let countersAnimated = false;
+    window.addEventListener('scroll', function() {
+      if (countersAnimated) return;
+      const section = document.querySelector('.naagrik-numbers');
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 80) {
+        animateCounters();
+        countersAnimated = true;
+      }
+    });
+    // If already in view on load
+    window.addEventListener('DOMContentLoaded', function() {
+      const section = document.querySelector('.naagrik-numbers');
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 80) {
+        animateCounters();
+        countersAnimated = true;
+      }
+    });
+  </script>
+</body>
+</html> 

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emergency Contacts | Naagrik</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-art" aria-hidden="true">
+    <svg width="100%" height="100%" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:0;">
+      <ellipse cx="1050" cy="120" rx="260" ry="110" fill="#f59e42" fill-opacity="0.13"/>
+      <ellipse cx="300" cy="700" rx="320" ry="140" fill="#6366f1" fill-opacity="0.10"/>
+      <ellipse cx="600" cy="200" rx="180" ry="80" fill="#6366f1" fill-opacity="0.08"/>
+    </svg>
+  </div>
+  <nav class="main-nav" aria-label="Main navigation">
+    <a href="index.html" class="nav-logo">
+      <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h6"/></svg>
+      Naagrik
+    </a>
+    <a href="about.html" class="nav-link">About</a>
+    <a href="emergency.html" class="nav-link" style="background:linear-gradient(90deg, var(--primary), var(--accent));color:#fff;">Emergency Contacts</a>
+    <a href="authority.html" class="nav-link">Authority Contacts</a>
+    <a href="#more" class="nav-link">More</a>
+    <a href="login.html" class="nav-link">Login</a>
+    <a href="register.html" class="nav-link">Register</a>
+  </nav>
+  <main class="info-main">
+    <h1 class="slogan">Emergency <span class="slogan-accent">Contacts</span></h1>
+    <div class="slogan-desc">Quick access to essential emergency numbers for your safety and well-being.</div>
+    <div class="slogan" style="margin-top:2em;">What to do in an Emergency</div>
+    <div class="emergency-steps">
+      <div class="emergency-step-card">
+        <div class="emergency-step-icon"><svg width="28" height="28" fill="none" stroke="#ef4444" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div class="emergency-step-title">Stay Calm</div>
+      </div>
+      <div class="emergency-step-card">
+        <div class="emergency-step-icon"><svg width="28" height="28" fill="none" stroke="#6366f1" stroke-width="2.2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="8"/><path d="M8 16v-1a4 4 0 0 1 8 0v1"/></svg></div>
+        <div class="emergency-step-title">Call for Help</div>
+      </div>
+      <div class="emergency-step-card">
+        <div class="emergency-step-icon"><svg width="28" height="28" fill="none" stroke="#f59e42" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div class="emergency-step-title">Share Location</div>
+      </div>
+      <div class="emergency-step-card">
+        <div class="emergency-step-icon"><svg width="28" height="28" fill="none" stroke="#6366f1" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 7V5a5 5 0 0 1 10 0v2"/></svg></div>
+        <div class="emergency-step-title">Help Others</div>
+      </div>
+      <div class="emergency-step-card">
+        <div class="emergency-step-icon"><svg width="28" height="28" fill="none" stroke="#f59e42" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h6"/></svg></div>
+        <div class="emergency-step-title">Wait for Help</div>
+      </div>
+    </div>
+    <button id="share-location-btn" class="nav-link emergency-share-btn" style="font-size:1.1em;margin-bottom:1.5em;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:0.3em;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Share My Location
+    </button>
+    <div id="location-toast" style="display:none;text-align:center;margin-bottom:1em;color:var(--primary);font-weight:600;"></div>
+    <div class="emergency-contacts">
+      <div class="emergency-contact-card police">
+        <div class="emergency-contact-icon"><svg width="28" height="28" fill="none" stroke="#ef4444" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div class="emergency-contact-title">Police</div>
+        <a href="tel:100" class="emergency-contact-link">100</a>
+      </div>
+      <div class="emergency-contact-card fire">
+        <div class="emergency-contact-icon"><svg width="28" height="28" fill="none" stroke="#f59e42" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 7V5a5 5 0 0 1 10 0v2"/></svg></div>
+        <div class="emergency-contact-title">Fire</div>
+        <a href="tel:101" class="emergency-contact-link">101</a>
+      </div>
+      <div class="emergency-contact-card ambulance">
+        <div class="emergency-contact-icon"><svg width="28" height="28" fill="none" stroke="#6366f1" stroke-width="2.2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="8"/><path d="M8 16v-1a4 4 0 0 1 8 0v1"/></svg></div>
+        <div class="emergency-contact-title">Ambulance</div>
+        <a href="tel:102" class="emergency-contact-link">102</a>
+      </div>
+      <div class="emergency-contact-card women">
+        <div class="emergency-contact-icon"><svg width="28" height="28" fill="none" stroke="#f59e42" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div class="emergency-contact-title">Women Helpline</div>
+        <a href="tel:1091" class="emergency-contact-link">1091</a>
+      </div>
+      <div class="emergency-contact-card disaster">
+        <div class="emergency-contact-icon"><svg width="28" height="28" fill="none" stroke="#6366f1" stroke-width="2.2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="8"/><path d="M8 16v-1a4 4 0 0 1 8 0v1"/></svg></div>
+        <div class="emergency-contact-title">Disaster Mgmt</div>
+        <a href="tel:108" class="emergency-contact-link">108</a>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2em;">
+      <a href="index.html" class="nav-link" style="font-size:1.1em;">← Back to Home</a>
+    </div>
+    <div style="text-align:center;margin-top:2em;font-size:0.98em;color:#888;">For more local helplines, contact your city administration.<br/>&copy; 2024 Naagrik</div>
+  </main>
+  <script>
+    document.getElementById('share-location-btn').onclick = async function() {
+      const toast = document.getElementById('location-toast');
+      if (!navigator.geolocation) {
+        toast.textContent = 'Geolocation not supported on this device.';
+        toast.style.display = 'block';
+        setTimeout(()=>toast.style.display='none', 3000);
+        return;
+      }
+      toast.textContent = 'Fetching your location...';
+      toast.style.display = 'block';
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lng = pos.coords.longitude.toFixed(6);
+        const link = `https://maps.google.com/?q=${lat},${lng}`;
+        navigator.clipboard.writeText(link).then(()=>{
+          toast.textContent = 'Location link copied! Share it with emergency responders.';
+          setTimeout(()=>toast.style.display='none', 3500);
+        }, ()=>{
+          toast.textContent = 'Copy failed. Here is your link: ' + link;
+          setTimeout(()=>toast.style.display='none', 6000);
+        });
+      }, function() {
+        toast.textContent = 'Unable to fetch your location.';
+        setTimeout(()=>toast.style.display='none', 3000);
+      });
+    };
+  </script>
+</body>
+</html> 
