@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api'; // Change if backend runs elsewhere
+const API_BASE = 'https://YOUR-BACKEND-RENDER-URL.onrender.com/api';
 
 function getToken() {
   return localStorage.getItem('token');
