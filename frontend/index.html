@@ -259,7 +259,9 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script type="module">
-    import { api } from './api.js';
+    const BACKEND_BASE_URL = window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : "https://naagrik.onrender.com";
     // Debug logs
     console.log("Script loaded");
     console.log("addIssueBtn:", document.getElementById('add-issue-btn'));
@@ -442,7 +444,7 @@
         ) {
           return user.avatar.startsWith('http')
             ? user.avatar
-            : `http://localhost:5000${user.avatar}`;
+            : `${BACKEND_BASE_URL}${user.avatar}`;
         }
         return `https://api.dicebear.com/7.x/person/svg?seed=${user?.username || fallbackSeed}`;
       }
@@ -648,7 +650,7 @@
       api.get('/users/me').then(profile => {
         // Update avatars
         if (profile.avatar) {
-          const avatarUrl = profile.avatar.startsWith('http') ? profile.avatar : `http://localhost:5000${profile.avatar}`;
+          const avatarUrl = profile.avatar.startsWith('http') ? profile.avatar : `${BACKEND_BASE_URL}${profile.avatar}`;
           userAvatar.src = avatarUrl;
           dropdownAvatar.src = avatarUrl;
         } else {
@@ -757,7 +759,7 @@
           if (avatarUrl) {
             const navAvatar = document.getElementById('profile-nav-avatar');
             if (navAvatar) {
-              navAvatar.src = avatarUrl.startsWith('http') ? avatarUrl : `http://localhost:5000${avatarUrl}`;
+              navAvatar.src = avatarUrl.startsWith('http') ? avatarUrl : `${BACKEND_BASE_URL}${avatarUrl}`;
             }
           }
           
@@ -787,7 +789,7 @@
         profileContact.textContent = profile.contact || '(Add contact info)';
       }
       if (dropdownAvatar && avatarUrl) {
-        dropdownAvatar.src = avatarUrl.startsWith('http') ? avatarUrl : `http://localhost:5000${avatarUrl}`;
+        dropdownAvatar.src = avatarUrl.startsWith('http') ? avatarUrl : `${BACKEND_BASE_URL}${avatarUrl}`;
       }
     }
 
