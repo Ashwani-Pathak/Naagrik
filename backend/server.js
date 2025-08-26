@@ -7,13 +7,13 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['https://naagrik-chi.vercel.app'],
+  origin: ['https://naagrik-chi.vercel.app', 'http://localhost:3000'],
   credentials: true
 }));
 
 // Add catch-all OPTIONS handler for CORS preflight
 app.options('*', cors({
-  origin: ['https://naagrik-chi.vercel.app'],
+  origin: ['https://naagrik-chi.vercel.app', 'http://localhost:3000'],
   credentials: true
 }));
 
@@ -41,4 +41,4 @@ app.use('/api/upload', require('./routes/upload'));
 app.use('/uploads', express.static('uploads'));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

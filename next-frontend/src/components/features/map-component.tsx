@@ -25,6 +25,8 @@ interface MapComponentProps {
   issues: Issue[]
   onMapClick?: (lat: number, lng: number) => void
   selectedIssue?: Issue | null
+  selectedLocation?: { lat: number; lng: number }
+  showAddMarker?: boolean
   center?: [number, number]
   zoom?: number
 }
@@ -33,12 +35,15 @@ export function MapComponent({
   issues, 
   onMapClick, 
   selectedIssue,
+  selectedLocation,
+  showAddMarker = false,
   center = [28.6139, 77.2090], 
   zoom = 13 
 }: MapComponentProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const markersRef = useRef<L.Marker[]>([])
+  const selectedMarkerRef = useRef<L.Marker | null>(null)
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
@@ -114,6 +119,42 @@ export function MapComponent({
       }
     })
   }, [issues, selectedIssue])
+
+  // Handle selected location marker for adding new issues
+  useEffect(() => {
+    if (!mapInstanceRef.current || !showAddMarker) return
+
+    // Remove existing selected location marker
+    if (selectedMarkerRef.current) {
+      mapInstanceRef.current.removeLayer(selectedMarkerRef.current)
+      selectedMarkerRef.current = null
+    }
+
+    // Add new selected location marker
+    if (selectedLocation) {
+      // Create a red marker for the selected location
+      const redIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="
+          background-color: #ef4444;
+          width: 25px;
+          height: 25px;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          border: 2px solid #ffffff;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        "></div>`,
+        iconSize: [25, 25],
+        iconAnchor: [12, 24]
+      })
+
+      selectedMarkerRef.current = L.marker([selectedLocation.lat, selectedLocation.lng], {
+        icon: redIcon
+      }).addTo(mapInstanceRef.current)
+
+      selectedMarkerRef.current.bindPopup('📍 New issue location')
+    }
+  }, [selectedLocation, showAddMarker])
 
   return (
     <div 

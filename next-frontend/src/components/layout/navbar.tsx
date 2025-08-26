@@ -12,7 +12,8 @@ import {
   UserPlus, 
   Settings, 
   LogOut,
-  User
+  User,
+  Plus
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -131,6 +132,13 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           {isLoggedIn ? (
             <>
+              <Link href="/report">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Report Issue
+                </Button>
+              </Link>
+              
               {isAdmin && (
                 <Link href="/admin">
                   <Button variant="outline" size="sm" className="gap-2">
