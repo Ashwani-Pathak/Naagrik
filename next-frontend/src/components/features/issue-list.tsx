@@ -96,18 +96,18 @@ export function IssueList({
               <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
                 {issue.category}
               </span>
-              {issue.location.address && (
+              {issue.location && (
                 <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
-                  {issue.location.address}
+                  {`${issue.location.lat.toFixed(4)}, ${issue.location.lng.toFixed(4)}`}
                 </span>
               )}
             </div>
 
-            {issue.imageUrl && (
+            {issue.photo && (
               <div className="mb-3">
                 <Image 
-                  src={issue.imageUrl} 
+                  src={issue.photo} 
                   alt={issue.title}
                   width={400}
                   height={128}

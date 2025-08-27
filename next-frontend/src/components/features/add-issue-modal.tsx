@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CreateIssueData } from '@/types'
+import { api } from '@/lib/api'
 
 interface AddIssueModalProps {
   isOpen: boolean
@@ -43,9 +44,21 @@ export function AddIssueModal({
     address: ''
   })
   const [image, setImage] = useState<File | null>(null)
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   if (!isOpen) return null
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      const response = await api.upload<{ url: string }>('/upload', file, 'image')
+      setUploadedImageUrl(response.url)
+      console.log('Image uploaded successfully:', response.url)
+    } catch (error) {
+      console.error('Failed to upload image:', error)
+      alert('Failed to upload image. You can still submit without an image.')
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,10 +81,9 @@ export function AddIssueModal({
       category: formData.category,
       location: {
         lat: selectedLocation!.lat,
-        lng: selectedLocation!.lng,
-        address: formData.address.trim() || undefined
+        lng: selectedLocation!.lng
       },
-      image: image || undefined
+      photo: uploadedImageUrl || undefined
     }
 
     onSubmit(issueData)
@@ -88,6 +100,7 @@ export function AddIssueModal({
     const file = e.target.files?.[0]
     if (file) {
       setImage(file)
+      handleImageUpload(file)
     }
   }
 

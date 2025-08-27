@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://naagrik.onrender.com/api'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
 
 class ApiClient {
   private baseUrl: string
@@ -108,6 +108,6 @@ export const auth = {
   isLoggedIn: () => !!auth.getToken(),
   isAdmin: () => {
     const user = auth.getUser() as { role?: string } | null
-    return user?.role === 'admin'
+    return user?.role === 'ADMIN'
   },
 }

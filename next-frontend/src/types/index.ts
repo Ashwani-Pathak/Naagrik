@@ -1,42 +1,25 @@
-export interface User {
-  id: string
-  username: string
-  email: string
-  role: 'user' | 'admin'
-  createdAt: string
-  updatedAt: string
-}
+import { User as PrismaUser, Issue as PrismaIssue, Comment as PrismaComment, Role, IssueStatus } from '@prisma/client'
 
-export interface Issue {
-  id: string
-  title: string
-  description: string
-  category: string
-  status: 'Open' | 'In Progress' | 'Resolved'
-  location: {
-    lat: number
-    lng: number
-    address?: string
-  }
-  imageUrl?: string
-  upvotes: number
-  userId: string
-  user: User
-  createdAt: string
-  updatedAt: string
+// Export Prisma types with relations
+export type User = PrismaUser & {
+  issues?: Issue[]
   comments?: Comment[]
 }
 
-export interface Comment {
-  id: string
-  content: string
-  userId: string
+export type Issue = PrismaIssue & {
   user: User
-  issueId: string
-  createdAt: string
-  updatedAt: string
+  comments?: Comment[]
 }
 
+export type Comment = PrismaComment & {
+  user: User
+  issue?: Issue
+}
+
+// Export enums
+export { Role, IssueStatus }
+
+// Custom types for API
 export interface CreateIssueData {
   title: string
   description: string
@@ -44,9 +27,14 @@ export interface CreateIssueData {
   location: {
     lat: number
     lng: number
-    address?: string
   }
-  image?: File
+  photo?: string
+}
+
+export interface CreateUserData {
+  username: string
+  email: string
+  password: string
 }
 
 export interface LoginData {

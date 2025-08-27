@@ -129,8 +129,8 @@ export function MapComponent({
           <div class="flex items-center justify-between flex-wrap gap-1">
             <span class="text-xs px-2 py-1 rounded-full bg-gray-100">${issue.category}</span>
             <span class="text-xs px-2 py-1 rounded-full ${
-              issue.status === 'Open' ? 'bg-red-100 text-red-800' :
-              issue.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+              issue.status === 'OPEN' ? 'bg-red-100 text-red-800' :
+              issue.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-800' :
               'bg-green-100 text-green-800'
             }">${issue.status}</span>
           </div>

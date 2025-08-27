@@ -8,7 +8,7 @@ import { IssueList } from '@/components/features/issue-list'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Search, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react'
-import { auth } from '@/lib/api'
+import { auth, api } from '@/lib/api'
 import { Issue } from '@/types'
 
 // Dynamic import for map component to avoid SSR issues
@@ -37,38 +37,68 @@ export default function HomePage() {
   const fetchIssues = async () => {
     try {
       setIsLoading(true)
-      // Mock data for development
+      const fetchedIssues = await api.get<Issue[]>('/issues')
+      setIssues(fetchedIssues)
+    } catch (error) {
+      console.error('Failed to fetch issues:', error)
+      // Fallback to mock data if API fails
       const mockIssues: Issue[] = [
         {
           id: '1',
           title: 'Pothole on Main Street',
           description: 'Large pothole causing traffic issues',
           category: 'Road',
-          status: 'Open',
+          photo: null,
+          status: 'OPEN',
           location: { lat: 28.6139, lng: 77.2090 },
           upvotes: 5,
-          userId: '1',
-          user: { id: '1', username: 'john_doe', email: 'john@example.com', role: 'user', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          createdBy: '1',
+          user: { 
+            id: '1', 
+            username: 'john_doe', 
+            email: 'john@example.com', 
+            password: '', 
+            role: 'USER', 
+            avatar: null,
+            description: null,
+            contact: null,
+            issuesReported: 0,
+            issuesResolved: 0,
+            createdAt: new Date(), 
+            updatedAt: new Date() 
+          },
+          createdAt: new Date(),
+          updatedAt: new Date()
         },
         {
           id: '2',
           title: 'Broken Streetlight',
           description: 'Streetlight not working since last week',
           category: 'Lighting',
-          status: 'In Progress',
+          photo: null,
+          status: 'IN_PROGRESS',
           location: { lat: 28.6129, lng: 77.2100 },
           upvotes: 3,
-          userId: '2',
-          user: { id: '2', username: 'jane_smith', email: 'jane@example.com', role: 'user', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          createdBy: '2',
+          user: { 
+            id: '2', 
+            username: 'jane_smith', 
+            email: 'jane@example.com', 
+            password: '', 
+            role: 'USER', 
+            avatar: null,
+            description: null,
+            contact: null,
+            issuesReported: 0,
+            issuesResolved: 0,
+            createdAt: new Date(), 
+            updatedAt: new Date() 
+          },
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ]
       setIssues(mockIssues)
-    } catch (error) {
-      console.error('Failed to fetch issues:', error)
     } finally {
       setIsLoading(false)
     }
@@ -90,11 +120,20 @@ export default function HomePage() {
       return
     }
 
-    setIssues(prev => prev.map(issue => 
-      issue.id === issueId 
-        ? { ...issue, upvotes: issue.upvotes + 1 }
-        : issue
-    ))
+    try {
+      const updatedIssue = await api.post<Issue>(`/issues/${issueId}/upvote`)
+      setIssues(prev => prev.map(issue => 
+        issue.id === issueId ? updatedIssue : issue
+      ))
+    } catch (error) {
+      console.error('Failed to upvote issue:', error)
+      // Fallback to local update
+      setIssues(prev => prev.map(issue => 
+        issue.id === issueId 
+          ? { ...issue, upvotes: issue.upvotes + 1 }
+          : issue
+      ))
+    }
   }
 
   const filteredIssues = issues.filter(issue => {
@@ -109,9 +148,9 @@ export default function HomePage() {
   const categories = [...new Set(issues.map(issue => issue.category))].sort()
   const statuses = ['Open', 'In Progress', 'Resolved']
 
-  const openIssues = issues.filter(issue => issue.status === 'Open').length
-  const inProgressIssues = issues.filter(issue => issue.status === 'In Progress').length
-  const resolvedIssues = issues.filter(issue => issue.status === 'Resolved').length
+  const openIssues = issues.filter(issue => issue.status === 'OPEN').length
+  const inProgressIssues = issues.filter(issue => issue.status === 'IN_PROGRESS').length
+  const resolvedIssues = issues.filter(issue => issue.status === 'RESOLVED').length
 
   return (
     <Layout>
