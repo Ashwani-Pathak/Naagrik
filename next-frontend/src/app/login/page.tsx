@@ -122,9 +122,7 @@ export default function LoginPage() {
               Sign in to your account to continue
             </p>
           </CardHeader>
-            <p className="text-sm text-gray-600">
-              Sign in to your account to continue
-            </p>
+                      
           
           <CardContent className="pt-6">
             {isSuccess ? (
