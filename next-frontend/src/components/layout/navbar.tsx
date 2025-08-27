@@ -30,7 +30,6 @@ const publicNavItems: NavItem[] = [
   { href: '/about', label: 'About', icon: Info },
   { href: '/emergency', label: 'Emergency Contacts', icon: Phone },
   { href: '/authority', label: 'Authority Contacts', icon: Shield },
-  { href: '#more', label: 'More', icon: MoreHorizontal },
 ]
 
 const authNavItems: NavItem[] = [
@@ -44,8 +43,11 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [user, setUser] = useState<{ username?: string; email?: string; role?: string } | null>(null)
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    setIsClient(true)
+    
     const checkAuth = () => {
       const loggedIn = auth.isLoggedIn()
       const admin = auth.isAdmin()
@@ -144,7 +146,7 @@ export function Navbar() {
                   <Button variant="outline" size="sm" className="gap-2">
                     <Settings className="w-4 h-4" />
                     Admin
-                  </Button>
+                      </Button>
                 </Link>
               )}
               

@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
 import { Layout } from '@/components/layout/layout'
 import { IssueList } from '@/components/features/issue-list'
-import { AddIssueModal } from '@/components/features/add-issue-modal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Search, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react'
 import { auth } from '@/lib/api'
-import { Issue, CreateIssueData } from '@/types'
+import { Issue } from '@/types'
 
 // Dynamic import for map component to avoid SSR issues
 const MapComponent = dynamic(
@@ -17,18 +17,20 @@ const MapComponent = dynamic(
   { ssr: false }
 )
 
-function HomePage() {
+export default function HomePage() {
+  const router = useRouter()
   const [issues, setIssues] = useState<Issue[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
+  const [isClient, setIsClient] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
+    setIsClient(true)
+    setIsLoggedIn(auth.isLoggedIn())
     fetchIssues()
   }, [])
 
@@ -72,47 +74,18 @@ function HomePage() {
     }
   }
 
-  const handleMapClick = (lat: number, lng: number) => {
-    if (auth.isLoggedIn()) {
-      setSelectedLocation({ lat, lng })
-      setShowAddModal(true)
+  const handleReportIssue = () => {
+    if (!isClient) return // Prevent action during SSR
+    
+    if (isLoggedIn) {
+      router.push('/report')
     } else {
-      alert('Please login to report an issue')
-    }
-  }
-
-  const handleAddIssue = async (data: CreateIssueData) => {
-    try {
-      setIsSubmitting(true)
-      
-      // Mock creating issue
-      const newIssue: Issue = {
-        id: Math.random().toString(),
-        title: data.title,
-        description: data.description,
-        category: data.category,
-        status: 'Open',
-        location: data.location,
-        upvotes: 0,
-        userId: '1',
-        user: { id: '1', username: 'current_user', email: 'user@example.com', role: 'user', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-
-      setIssues(prev => [newIssue, ...prev])
-      setShowAddModal(false)
-      setSelectedLocation(null)
-    } catch (error) {
-      console.error('Failed to create issue:', error)
-      alert('Failed to create issue. Please try again.')
-    } finally {
-      setIsSubmitting(false)
+      router.push('/login')
     }
   }
 
   const handleUpvote = async (issueId: string) => {
-    if (!auth.isLoggedIn()) {
+    if (!isLoggedIn) {
       alert('Please login to upvote')
       return
     }
@@ -187,16 +160,14 @@ function HomePage() {
             </div>
           </div>
 
-          {auth.isLoggedIn() && (
-            <Button 
-              onClick={() => setShowAddModal(true)}
-              size="lg"
-              className="gap-2 shadow-lg"
-            >
-              <Plus className="w-5 h-5" />
-              Report New Issue
-            </Button>
-          )}
+          <Button 
+            onClick={handleReportIssue}
+            size="lg"
+            className="gap-2 shadow-lg"
+          >
+            <Plus className="w-5 h-5" />
+            Report New Issue
+          </Button>
         </div>
       </section>
 
@@ -217,7 +188,6 @@ function HomePage() {
               <CardContent className="h-full pb-6">
                 <MapComponent
                   issues={filteredIssues}
-                  onMapClick={handleMapClick}
                   selectedIssue={selectedIssue}
                 />
               </CardContent>
@@ -285,20 +255,6 @@ function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Add Issue Modal */}
-      <AddIssueModal
-        isOpen={showAddModal}
-        onClose={() => {
-          setShowAddModal(false)
-          setSelectedLocation(null)
-        }}
-        onSubmit={handleAddIssue}
-        isLoading={isSubmitting}
-        selectedLocation={selectedLocation}
-      />
     </Layout>
   )
 }
-
-export default HomePage

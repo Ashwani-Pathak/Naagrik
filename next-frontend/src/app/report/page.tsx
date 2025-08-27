@@ -14,7 +14,7 @@ import {
   Camera,
   FileImage
 } from 'lucide-react'
-import { auth } from '@/lib/api'
+import { auth, api } from '@/lib/api'
 import { CreateIssueData } from '@/types'
 
 // Dynamic import for map component to avoid SSR issues
@@ -34,6 +34,7 @@ export default function ReportIssuePage() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('')
 
   // Check authentication on mount
   useEffect(() => {
@@ -43,9 +44,11 @@ export default function ReportIssuePage() {
   }, [router])
 
   const categories = [
-    'Road Infrastructure',
-    'Water Supply',
+    'Road',
+    'Pothole', 
+    'Lighting',
     'Electricity',
+    'Water Supply',
     'Waste Management',
     'Public Safety',
     'Healthcare',
@@ -71,11 +74,23 @@ export default function ReportIssuePage() {
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
-    setSelectedFiles(prev => [...prev, ...files].slice(0, 3)) // Max 3 files
+    if (files.length > 0) {
+      setSelectedFiles([files[0]]) // Only take the first file, like in original
+      
+      // Upload image immediately like in original implementation
+      handleImageUpload(files[0])
+    }
   }
 
-  const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+  const handleImageUpload = async (file: File) => {
+    try {
+      const response = await api.upload<{ url: string }>('/upload', file, 'image')
+      setUploadedImageUrl(response.url)
+      console.log('Image uploaded successfully:', response.url)
+    } catch (error) {
+      console.error('Failed to upload image:', error)
+      alert('Failed to upload image. You can still submit without an image.')
+    }
   }
 
   const validateForm = () => {
@@ -103,25 +118,28 @@ export default function ReportIssuePage() {
     try {
       setIsSubmitting(true)
 
-      const issueData: CreateIssueData = {
+      // Create issue data matching backend expectations
+      const issueData = {
         title: formData.title,
         description: formData.description,
         category: formData.category,
-        location: formData.location
+        location: formData.location,
+        photo: uploadedImageUrl || undefined // Include uploaded image URL if available
       }
 
-      // TODO: Replace with actual API call
       console.log('Creating issue:', issueData)
-      console.log('Files:', selectedFiles)
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Create the issue using the API
+      const response = await api.post('/issues', issueData)
+      console.log('Issue created successfully:', response)
 
-      // Redirect to home page after successful submission
+      // Show success message and redirect
+      alert('Issue reported successfully!')
       router.push('/')
     } catch (error) {
       console.error('Failed to create issue:', error)
-      alert('Failed to create issue. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create issue. Please try again.'
+      alert(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -241,7 +259,6 @@ export default function ReportIssuePage() {
                       <input
                         type="file"
                         id="file-upload"
-                        multiple
                         accept="image/*"
                         onChange={handleFileSelect}
                         className="hidden"
@@ -252,34 +269,35 @@ export default function ReportIssuePage() {
                       >
                         <Upload className="w-8 h-8 text-gray-400" />
                         <div>
-                          <p className="text-gray-600 font-medium">Click to upload photos</p>
-                          <p className="text-sm text-gray-500">Max 3 photos, up to 5MB each</p>
+                          <p className="text-gray-600 font-medium">Click to upload a photo</p>
+                          <p className="text-sm text-gray-500">One photo, up to 5MB</p>
                         </div>
                       </label>
                     </div>
 
-                    {/* Selected Files */}
+                    {/* Selected File & Upload Status */}
                     {selectedFiles.length > 0 && (
-                      <div className="mt-4 space-y-2">
-                        {selectedFiles.map((file, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                          >
-                            <div className="flex items-center gap-3">
-                              <FileImage className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm text-gray-700">{file.name}</span>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeFile(index)}
-                            >
-                              Remove
-                            </Button>
+                      <div className="mt-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <FileImage className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm text-gray-700">{selectedFiles[0].name}</span>
+                            {uploadedImageUrl && (
+                              <span className="text-xs text-green-600 font-medium">✓ Uploaded</span>
+                            )}
                           </div>
-                        ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedFiles([])
+                              setUploadedImageUrl('')
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </CardContent>
