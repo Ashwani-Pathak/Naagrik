@@ -160,14 +160,13 @@ export default function HomePage() {
             </div>
           </div>
 
-          <Button 
-            onClick={handleReportIssue}
-            size="lg"
-            className="gap-2 shadow-lg"
-          >
-            <Plus className="w-5 h-5" />
-            Report New Issue
-          </Button>
+            <Button
+              onClick={handleReportIssue}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ease-out border-0 gap-3 text-lg"
+            >
+              <Plus className="w-6 h-6" />
+              Report New Issue
+            </Button>
         </div>
       </section>
 
