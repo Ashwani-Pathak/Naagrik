@@ -175,21 +175,23 @@ export default function HomePage() {
       <section className="py-8 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Map Section */}
-            <Card className="h-[600px]">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            {/* Map Section - Fixed container with proper height constraints */}
+            <Card className="overflow-hidden">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <span>Interactive Map</span>
                   <span className="text-sm text-gray-500 font-normal">
                     Click to report an issue
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="h-full pb-6">
-                <MapComponent
-                  issues={filteredIssues}
-                  selectedIssue={selectedIssue}
-                />
+              <CardContent className="p-0">
+                <div className="w-full h-[500px] relative">
+                  <MapComponent
+                    issues={filteredIssues}
+                    selectedIssue={selectedIssue}
+                  />
+                </div>
               </CardContent>
             </Card>
 
@@ -241,7 +243,7 @@ export default function HomePage() {
                 <CardHeader>
                   <CardTitle>Recent Issues ({filteredIssues.length})</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="max-h-[400px] overflow-y-auto">
                   <IssueList
                     issues={filteredIssues}
                     onIssueSelect={setSelectedIssue}

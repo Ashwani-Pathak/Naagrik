@@ -48,14 +48,33 @@ export function MapComponent({
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
 
-    // Initialize map
-    const map = L.map(mapRef.current).setView(center, zoom)
+    // Initialize map with proper container constraints
+    const map = L.map(mapRef.current, {
+      preferCanvas: true,
+      attributionControl: true,
+      zoomControl: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      boxZoom: true,
+      keyboard: true,
+      dragging: true,
+      touchZoom: true
+    }).setView(center, zoom)
+    
     mapInstanceRef.current = map
 
     // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+      tileSize: 256,
+      zoomOffset: 0,
     }).addTo(map)
+
+    // Force resize after initialization
+    setTimeout(() => {
+      map.invalidateSize()
+    }, 100)
 
     // Handle map clicks
     if (onMapClick) {
@@ -71,6 +90,20 @@ export function MapComponent({
       }
     }
   }, [center, zoom, onMapClick])
+
+  // Handle window resize to ensure map stays within bounds
+  useEffect(() => {
+    const handleResize = () => {
+      if (mapInstanceRef.current) {
+        setTimeout(() => {
+          mapInstanceRef.current?.invalidateSize()
+        }, 100)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     if (!mapInstanceRef.current) return
@@ -90,10 +123,10 @@ export function MapComponent({
 
       // Create popup content
       const popupContent = `
-        <div class="p-2 min-w-[200px]">
-          <h3 class="font-semibold text-lg mb-2">${issue.title}</h3>
-          <p class="text-sm text-gray-600 mb-2">${issue.description}</p>
-          <div class="flex items-center justify-between">
+        <div class="p-2 min-w-[200px] max-w-[250px]">
+          <h3 class="font-semibold text-lg mb-2 break-words">${issue.title}</h3>
+          <p class="text-sm text-gray-600 mb-2 break-words">${issue.description}</p>
+          <div class="flex items-center justify-between flex-wrap gap-1">
             <span class="text-xs px-2 py-1 rounded-full bg-gray-100">${issue.category}</span>
             <span class="text-xs px-2 py-1 rounded-full ${
               issue.status === 'Open' ? 'bg-red-100 text-red-800' :
@@ -110,7 +143,11 @@ export function MapComponent({
         </div>
       `
 
-      marker.bindPopup(popupContent)
+      marker.bindPopup(popupContent, {
+        maxWidth: 250,
+        closeButton: true,
+        autoClose: false
+      })
       markersRef.current.push(marker)
 
       // Open popup if this is the selected issue
@@ -159,8 +196,14 @@ export function MapComponent({
   return (
     <div 
       ref={mapRef} 
-      className="w-full h-full rounded-lg shadow-lg"
-      style={{ minHeight: '400px' }}
+      className="w-full h-full rounded-lg overflow-hidden"
+      style={{ 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
+      }}
     />
   )
 }

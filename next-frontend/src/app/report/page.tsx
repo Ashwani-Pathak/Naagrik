@@ -304,10 +304,10 @@ export default function ReportIssuePage() {
                 </Card>
               </div>
 
-              {/* Map Section */}
+              {/* Map Section - Fixed container with proper height constraints */}
               <div className="space-y-6">
-                <Card className="h-[600px]">
-                  <CardHeader>
+                <Card className="overflow-hidden">
+                  <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2">
                       <MapPin className="w-5 h-5" />
                       Issue Location
@@ -316,13 +316,15 @@ export default function ReportIssuePage() {
                       Click on the map to mark the exact location of the issue
                     </p>
                   </CardHeader>
-                  <CardContent className="h-full pb-6">
-                    <MapComponent
-                      issues={[]}
-                      onMapClick={handleMapClick}
-                      selectedLocation={formData.location}
-                      showAddMarker={true}
-                    />
+                  <CardContent className="p-0">
+                    <div className="w-full h-[450px] relative">
+                      <MapComponent
+                        issues={[]}
+                        onMapClick={handleMapClick}
+                        selectedLocation={formData.location}
+                        showAddMarker={true}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
 
