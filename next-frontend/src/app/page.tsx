@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { Layout } from '@/components/layout/layout'
@@ -14,7 +14,27 @@ import { Issue } from '@/types'
 // Dynamic import for map component to avoid SSR issues
 const MapComponent = dynamic(
   () => import('@/components/features/map-component').then(mod => ({ default: mod.MapComponent })),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">Loading map...</div>
+  }
+)
+
+// Loading components for better UX
+const IssueListSkeleton = () => (
+  <div className="space-y-4">
+    {[...Array(3)].map((_, i) => (
+      <div key={i} className="h-32 bg-gray-200 rounded-lg animate-pulse" />
+    ))}
+  </div>
+)
+
+const StatsSkeleton = () => (
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    {[...Array(4)].map((_, i) => (
+      <div key={i} className="h-24 bg-gray-200 rounded-lg animate-pulse" />
+    ))}
+  </div>
 )
 
 export default function HomePage() {
@@ -27,6 +47,7 @@ export default function HomePage() {
   const [selectedStatus, setSelectedStatus] = useState('')
   const [isClient, setIsClient] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setIsClient(true)
@@ -37,68 +58,15 @@ export default function HomePage() {
   const fetchIssues = async () => {
     try {
       setIsLoading(true)
+      setError(null)
       const fetchedIssues = await api.get<Issue[]>('/issues')
       setIssues(fetchedIssues)
     } catch (error) {
       console.error('Failed to fetch issues:', error)
-      // Fallback to mock data if API fails
-      const mockIssues: Issue[] = [
-        {
-          id: '1',
-          title: 'Pothole on Main Street',
-          description: 'Large pothole causing traffic issues',
-          category: 'Road',
-          photo: null,
-          status: 'OPEN',
-          location: { lat: 28.6139, lng: 77.2090 },
-          upvotes: 5,
-          createdBy: '1',
-          user: { 
-            id: '1', 
-            username: 'john_doe', 
-            email: 'john@example.com', 
-            password: '', 
-            role: 'USER', 
-            avatar: null,
-            description: null,
-            contact: null,
-            issuesReported: 0,
-            issuesResolved: 0,
-            createdAt: new Date(), 
-            updatedAt: new Date() 
-          },
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        {
-          id: '2',
-          title: 'Broken Streetlight',
-          description: 'Streetlight not working since last week',
-          category: 'Lighting',
-          photo: null,
-          status: 'IN_PROGRESS',
-          location: { lat: 28.6129, lng: 77.2100 },
-          upvotes: 3,
-          createdBy: '2',
-          user: { 
-            id: '2', 
-            username: 'jane_smith', 
-            email: 'jane@example.com', 
-            password: '', 
-            role: 'USER', 
-            avatar: null,
-            description: null,
-            contact: null,
-            issuesReported: 0,
-            issuesResolved: 0,
-            createdAt: new Date(), 
-            updatedAt: new Date() 
-          },
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      ]
-      setIssues(mockIssues)
+      setError('Failed to load issues. Please try again.')
+      
+      // Fallback to empty array instead of mock data for production
+      setIssues([])
     } finally {
       setIsLoading(false)
     }
@@ -212,6 +180,18 @@ export default function HomePage() {
       {/* Main Content */}
       <section className="py-8 px-6">
         <div className="max-w-7xl mx-auto">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-center">{error}</p>
+              <button 
+                onClick={fetchIssues}
+                className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors mx-auto block"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Map Section - Fixed container with proper height constraints */}
             <Card className="overflow-hidden">
@@ -225,10 +205,16 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="w-full h-[500px] relative">
-                  <MapComponent
-                    issues={filteredIssues}
-                    selectedIssue={selectedIssue}
-                  />
+                  <Suspense fallback={
+                    <div className="h-full bg-gray-100 animate-pulse flex items-center justify-center">
+                      Loading map...
+                    </div>
+                  }>
+                    <MapComponent
+                      issues={filteredIssues}
+                      selectedIssue={selectedIssue}
+                    />
+                  </Suspense>
                 </div>
               </CardContent>
             </Card>
@@ -282,13 +268,21 @@ export default function HomePage() {
                   <CardTitle>Recent Issues ({filteredIssues.length})</CardTitle>
                 </CardHeader>
                 <CardContent className="max-h-[400px] overflow-y-auto">
-                  <IssueList
-                    issues={filteredIssues}
-                    onIssueSelect={setSelectedIssue}
-                    selectedIssue={selectedIssue}
-                    onUpvote={handleUpvote}
-                    isLoading={isLoading}
-                  />
+                  {isLoading ? (
+                    <IssueListSkeleton />
+                  ) : filteredIssues.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      {error ? 'Failed to load issues' : 'No issues found'}
+                    </div>
+                  ) : (
+                    <IssueList
+                      issues={filteredIssues}
+                      onIssueSelect={setSelectedIssue}
+                      selectedIssue={selectedIssue}
+                      onUpvote={handleUpvote}
+                      isLoading={false}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </div>

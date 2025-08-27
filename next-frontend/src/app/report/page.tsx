@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { Layout } from '@/components/layout/layout'
@@ -12,7 +12,9 @@ import {
   Upload, 
   AlertCircle,
   Camera,
-  FileImage
+  FileImage,
+  Loader2,
+  CheckCircle
 } from 'lucide-react'
 import { auth, api } from '@/lib/api'
 import { CreateIssueData } from '@/types'
@@ -20,7 +22,10 @@ import { CreateIssueData } from '@/types'
 // Dynamic import for map component to avoid SSR issues
 const MapComponent = dynamic(
   () => import('@/components/features/map-component').then(mod => ({ default: mod.MapComponent })),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">Loading map...</div>
+  }
 )
 
 export default function ReportIssuePage() {
@@ -33,15 +38,102 @@ export default function ReportIssuePage() {
   })
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('')
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+
+  // Callback functions - must be defined before early returns
+  const handleImageUpload = useCallback(async (file: File) => {
+    try {
+      setIsUploading(true)
+      const response = await api.upload<{ url: string }>('/upload', file, 'image')
+      setUploadedImageUrl(response.url)
+      console.log('Image uploaded successfully:', response.url)
+    } catch (error) {
+      console.error('Failed to upload image:', error)
+      alert('Failed to upload image. You can still submit without an image.')
+    } finally {
+      setIsUploading(false)
+    }
+  }, [])
+
+  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
+    if (files.length > 0) {
+      const file = files[0]
+      
+      // Validate file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024
+      if (file.size > maxSize) {
+        alert('File size must be less than 5MB')
+        return
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPEG, JPG, PNG, WebP)')
+        return
+      }
+
+      setSelectedFiles([file])
+      handleImageUpload(file)
+    }
+  }, [handleImageUpload])
+
+  const validateForm = useCallback(() => {
+    const newErrors: Record<string, string> = {}
+    
+    if (!formData.title.trim()) {
+      newErrors.title = 'Title is required'
+    }
+    
+    if (!formData.description.trim()) {
+      newErrors.description = 'Description is required'
+    }
+    
+    if (!formData.category) {
+      newErrors.category = 'Please select a category'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }, [formData])
 
   // Check authentication on mount
   useEffect(() => {
-    if (!auth.isLoggedIn()) {
-      router.push('/login')
+    const checkAuth = async () => {
+      setIsCheckingAuth(true)
+      const loggedIn = auth.isLoggedIn()
+      setIsAuthenticated(loggedIn)
+      
+      if (!loggedIn) {
+        router.push('/login')
+        return
+      }
+      setIsCheckingAuth(false)
     }
+    
+    checkAuth()
   }, [router])
+
+  // Don't render anything while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+      </Layout>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null // Will redirect to login
+  }
 
   const categories = [
     'Road',
@@ -72,59 +164,22 @@ export default function ReportIssuePage() {
     }
   }
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || [])
-    if (files.length > 0) {
-      setSelectedFiles([files[0]]) // Only take the first file, like in original
-      
-      // Upload image immediately like in original implementation
-      handleImageUpload(files[0])
-    }
-  }
-
-  const handleImageUpload = async (file: File) => {
-    try {
-      const response = await api.upload<{ url: string }>('/upload', file, 'image')
-      setUploadedImageUrl(response.url)
-      console.log('Image uploaded successfully:', response.url)
-    } catch (error) {
-      console.error('Failed to upload image:', error)
-      alert('Failed to upload image. You can still submit without an image.')
-    }
-  }
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!formData.title.trim()) {
-      newErrors.title = 'Title is required'
-    }
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required'
-    }
-    if (!formData.category) {
-      newErrors.category = 'Category is required'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateForm()) return
+    if (!validateForm() || isSubmitting) return
 
     try {
       setIsSubmitting(true)
+      setSubmitMessage(null) // Clear any previous messages
 
       // Create issue data matching backend expectations
-      const issueData = {
-        title: formData.title,
-        description: formData.description,
+      const issueData: CreateIssueData = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
         category: formData.category,
         location: formData.location,
-        photo: uploadedImageUrl || undefined // Include uploaded image URL if available
+        photo: uploadedImageUrl || undefined
       }
 
       console.log('Creating issue:', issueData)
@@ -133,13 +188,17 @@ export default function ReportIssuePage() {
       const response = await api.post('/issues', issueData)
       console.log('Issue created successfully:', response)
 
-      // Show success message and redirect
-      alert('Issue reported successfully!')
-      router.push('/')
+      // Show success message
+      setSubmitMessage({ type: 'success', text: 'Issue reported successfully! Redirecting...' })
+      
+      // Redirect after a short delay to show success message
+      setTimeout(() => {
+        router.push('/')
+      }, 2000)
     } catch (error) {
       console.error('Failed to create issue:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to create issue. Please try again.'
-      alert(errorMessage)
+      setSubmitMessage({ type: 'error', text: errorMessage })
     } finally {
       setIsSubmitting(false)
     }
@@ -255,23 +314,43 @@ export default function ReportIssuePage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                       <input
                         type="file"
                         id="file-upload"
                         accept="image/*"
                         onChange={handleFileSelect}
                         className="hidden"
+                        disabled={isUploading}
                       />
                       <label
                         htmlFor="file-upload"
-                        className="cursor-pointer flex flex-col items-center gap-3"
+                        className={`cursor-pointer flex flex-col items-center gap-3 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        <Upload className="w-8 h-8 text-gray-400" />
-                        <div>
-                          <p className="text-gray-600 font-medium">Click to upload a photo</p>
-                          <p className="text-sm text-gray-500">One photo, up to 5MB</p>
-                        </div>
+                        {isUploading ? (
+                          <>
+                            <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+                            <div>
+                              <p className="text-gray-600 font-medium">Uploading...</p>
+                            </div>
+                          </>
+                        ) : uploadedImageUrl ? (
+                          <>
+                            <CheckCircle className="w-8 h-8 text-green-500" />
+                            <div>
+                              <p className="text-green-600 font-medium">Image uploaded successfully!</p>
+                              <p className="text-sm text-gray-500">Click to change</p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 text-gray-400" />
+                            <div>
+                              <p className="text-gray-600 font-medium">Click to upload a photo</p>
+                              <p className="text-sm text-gray-500">One photo, up to 5MB</p>
+                            </div>
+                          </>
+                        )}
                       </label>
                     </div>
 
@@ -318,12 +397,21 @@ export default function ReportIssuePage() {
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="w-full h-[450px] relative">
-                      <MapComponent
-                        issues={[]}
-                        onMapClick={handleMapClick}
-                        selectedLocation={formData.location}
-                        showAddMarker={true}
-                      />
+                      <Suspense fallback={
+                        <div className="h-full bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">
+                          <div className="text-center">
+                            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-gray-400" />
+                            <p className="text-gray-500">Loading interactive map...</p>
+                          </div>
+                        </div>
+                      }>
+                        <MapComponent
+                          issues={[]}
+                          onMapClick={handleMapClick}
+                          selectedLocation={formData.location}
+                          showAddMarker={true}
+                        />
+                      </Suspense>
                     </div>
                   </CardContent>
                 </Card>
@@ -341,15 +429,43 @@ export default function ReportIssuePage() {
               </div>
             </div>
 
+            {/* Success/Error Message */}
+            {submitMessage && (
+              <div className={`mt-6 p-4 rounded-lg text-center ${
+                submitMessage.type === 'success' 
+                  ? 'bg-green-50 text-green-700 border border-green-200' 
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}>
+                {submitMessage.type === 'success' ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <CheckCircle className="h-5 w-5" />
+                    <span>{submitMessage.text}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-red-500">⚠</span>
+                    <span>{submitMessage.text}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Submit Button */}
             <div className="mt-8 flex justify-center">
               <Button
                 type="submit"
                 size="lg"
-                disabled={isSubmitting}
-                className="px-8 py-3 text-lg"
+                disabled={isSubmitting || isUploading}
+                className="px-8 py-3 text-lg min-w-[200px] relative"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Issue Report'}
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Submitting...</span>
+                  </div>
+                ) : (
+                  'Submit Issue Report'
+                )}
               </Button>
             </div>
           </form>
