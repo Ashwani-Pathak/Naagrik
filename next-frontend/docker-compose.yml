@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  # MongoDB with Replica Set
+  mongodb:
+    image: mongo:7.0
+    container_name: naagrik-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: naagrik123
+      MONGO_INITDB_DATABASE: Nagrik
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/init-replica.js:/docker-entrypoint-initdb.d/init-replica.js:ro
+    command: >
+      bash -c "
+        # Create keyfile for replica set security
+        openssl rand -base64 756 > /tmp/keyfile &&
+        chmod 400 /tmp/keyfile &&
+        chown 999:999 /tmp/keyfile &&
+        # Start MongoDB with replica set
+        exec mongod --replSet rs0 --keyFile /tmp/keyfile --bind_ip_all --auth
+      "
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - naagrik-network
+
+  # MongoDB Replica Set Initialization
+  mongo-init:
+    image: mongo:7.0
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: naagrik123
+    command: >
+      bash -c "
+        echo 'Waiting for MongoDB to be ready...' &&
+        sleep 10 &&
+        mongosh --host mongodb:27017 -u admin -p naagrik123 --authenticationDatabase admin --eval \"
+          try {
+            var config = {
+              '_id': 'rs0',
+              'version': 1,
+              'members': [
+                {
+                  '_id': 0,
+                  'host': 'mongodb:27017',
+                  'priority': 1
+                }
+              ]
+            };
+            rs.initiate(config);
+            print('Replica set initiated successfully');
+            
+            // Wait for replica set to be ready
+            var isReady = false;
+            var attempts = 0;
+            while (!isReady && attempts < 30) {
+              try {
+                var status = rs.status();
+                if (status.members[0].state === 1) {
+                  isReady = true;
+                  print('Replica set is ready');
+                } else {
+                  print('Waiting for replica set to be ready... attempt ' + (attempts + 1));
+                  sleep(2000);
+                }
+              } catch (e) {
+                print('Waiting for replica set... attempt ' + (attempts + 1));
+                sleep(2000);
+              }
+              attempts++;
+            }
+            
+            if (isReady) {
+              // Create application database and user
+              use('Nagrik');
+              db.createUser({
+                user: 'naagrik_user',
+                pwd: 'naagrik_password',
+                roles: [
+                  {
+                    role: 'readWrite',
+                    db: 'Nagrik'
+                  }
+                ]
+              });
+              print('Application user created successfully');
+            }
+          } catch (e) {
+            if (e.message.includes('already initialized')) {
+              print('Replica set already initialized');
+            } else {
+              print('Error: ' + e.message);
+            }
+          }
+        \"
+      "
+    networks:
+      - naagrik-network
+
+  # Next.js Application
+  nextjs-app:
+    build: .
+    container_name: naagrik-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=mongodb://admin:naagrik123@mongodb:27017/Nagrik?authSource=admin&replicaSet=rs0
+      - NEXT_PUBLIC_API_URL=http://localhost:3000/api
+      - JWT_SECRET=Ashwani@22634
+      - CLOUDINARY_CLOUD_NAME=dr2mckuz4
+      - CLOUDINARY_API_KEY=146817516614865
+      - CLOUDINARY_API_SECRET=RGiu1Jjj78YdSrENYxUDAZqst0E
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_SECURE=false
+      - SMTP_USER=your-email@gmail.com
+      - SMTP_PASS=your-app-password
+      - ADMIN_EMAIL=admin@naagrik.com
+      - NEXT_PUBLIC_APP_NAME=Naagrik
+      - NEXT_PUBLIC_APP_VERSION=1.0.0
+      - NEXT_PUBLIC_MAP_CENTER_LAT=28.6139
+      - NEXT_PUBLIC_MAP_CENTER_LNG=77.2090
+      - NEXT_PUBLIC_MAP_ZOOM=13
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - naagrik-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  naagrik-network:
+    driver: bridge
